@@ -1,3 +1,4 @@
+
 import torch
 import numpy as np
 import torch.nn as nn
@@ -12,15 +13,31 @@ spacy_jp = spacy.load("ja_core_news_sm") # load japanese
 spacy_en = spacy.load("en_core_web_sm") # load english
 spacy_ge = spacy.load("de_core_news_sm") # load german
 
-#def tokenize_jp(sometext):
- #   return [tok.sometext for tok in spacy_jp.tokenizer(sometext)]
+def tokenize_jp(sometext):
+    return [tok.sometext for tok in spacy_jp.tokenizer(sometext)] # returns the tokenised version of strings in spacy_jp
 
 def tokenize_en(sometext):
-    return [tok.sometext for tok in spacy_en.tokenizer(sometext)]
+    return [tok.sometext for tok in spacy_en.tokenizer(sometext)] # returns the tokenised version of strings in spacy_en
 
 def tokenize_ge(sometext):
-    return [tok.sometext for tok in spacy_ge.tokenizer(sometext)]
+    return [tok.sometext for tok in spacy_ge.tokenizer(sometext)] # returns the tokenised version of strings in spacy_ge
 
+
+
+german = Field(tokenize=tokenize_jp, lower=True, init_token="<sos>", eos_token="<eos>")
+
+english = Field(tokenize=tokenize_en, lower=True, init_token="<sos>", eos_token="<eos>")
+
+japanese = Field(tokenize=tokenize_jp, lower=True, init_token="<sos>", eos_token="<eos>")
+
+# Now we split files into train and test sets
+
+train_data, valid_data, test_data = Multi30k.splits(
+    exts=(".de", ".en"), fields=(german, english)
+)
+
+german.build_vocab(train_data, max_size=10000, min_freq=2)
+english.build_vocab(train_data, max_size=10000, min_freq=2)
 
 
 def test():
