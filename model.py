@@ -1,4 +1,6 @@
 
+from logging import root
+from posixpath import split
 import torch
 import numpy as np
 import torch.nn as nn
@@ -32,12 +34,9 @@ japanese = Field(tokenize=tokenize_jp, lower=True, init_token="<sos>", eos_token
 
 # Now we split files into train and test sets
 
-train_data, valid_data, test_data = Multi30k.splits(
-    exts=(".de", ".en"), fields=(german, english)
-)
-
-german.build_vocab(train_data, max_size=10000, min_freq=2)
-english.build_vocab(train_data, max_size=10000, min_freq=2)
+train, valid, test = Multi30k(root=".data", split=('train', 'valid', 'test'), language_pair=('en', 'de'))
+german.build_vocab(train, max_size=10000, min_freq=2)
+english.build_vocab(train, max_size=10000, min_freq=2)
 
 
 def test():
@@ -45,3 +44,4 @@ def test():
 
 if __name__=="__main__":
     test()
+    
