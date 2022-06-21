@@ -8,36 +8,45 @@ import torch.optim as optim
 from torchtext.datasets import Multi30k
 from torchtext.legacy.data import Field, TabularDataset, BucketIterator, Iterator
 
-import spacy
-# We use spacy to load some desired languages
 
-spacy_jp = spacy.load("ja_core_news_sm") # load japanese
-spacy_en = spacy.load("en_core_web_sm") # load english
-spacy_ge = spacy.load("de_core_news_sm") # load german
+# implementing generic tranformer attn mechanism
+class Transfomer(nn.Module):
+    def __init__(
+        self,
+        embedding_size,
+        src_vocab_size,
+        trg_vocab_size,
+        src_pad_idx,
+        num_heads,
+        num_encoder_layers,
+        num_decoder_layers,
+        forward_expansion,
+        dropout,
+        max_len,
+        device,
+    ):
+        super(Transformer, self).__init__()
+        self.src_word_embedding = nn.Embedding(src_vocab_size, embedding_size)
+        self.src_position_embedding = nn.Embedding(max_len, embedding_size)
+        self.trg_word_embedding = nn.Embedding(trg_vocab_size, embedding_size)
+        self.trg_position_embedding = nn.Embedding(max_len, embedding_size)
 
-def tokenize_jp(sometext):
-    return [tok.sometext for tok in spacy_jp.tokenizer(sometext)] # returns the tokenised version of strings in spacy_jp
+        self.device = device
+        self.transformer = nn.Transformer(
+            embedding_size,
+            num_heads,
+            num_encoder_layers,
+            num_decoder_layers,
+            forward_expansion,
+            dropout,
+        )
+        self.fc_out = nn.Linear(embedding_size, trg_vocab_size)
+        self.dropout = nn.Dropout(dropout)
+        self.src_pad_idx = src_pad_idx
 
-def tokenize_en(sometext):
-    return [tok.sometext for tok in spacy_en.tokenizer(sometext)] # returns the tokenised version of strings in spacy_en
 
-def tokenize_ge(sometext):
-    return [tok.sometext for tok in spacy_ge.tokenizer(sometext)] # returns the tokenised version of strings in spacy_ge
-
-
-
-german = Field(tokenize=tokenize_jp, lower=True, init_token="<sos>", eos_token="<eos>")
-
-english = Field(tokenize=tokenize_en, lower=True, init_token="<sos>", eos_token="<eos>")
-
-japanese = Field(tokenize=tokenize_jp, lower=True, init_token="<sos>", eos_token="<eos>")
-
-# Now we split files into train and test sets
-
-train, valid, test = Multi30k(root=".data", split=('train', 'valid', 'test'), language_pair=('en', 'de'))
-german.build_vocab(train, max_size=10000, min_freq=2)
-english.build_vocab(train, max_size=10000, min_freq=2)
-
+    def mask():
+        return 
 
 def test():
     print("Just checking for tuntime errs!")
