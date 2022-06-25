@@ -33,9 +33,9 @@ japanese = Field(tokenize=tokenize_jp, lower=True, init_token="<sos>", eos_token
 
 # Now we split files into train and test sets
 
-#train_data, valid_data, test_data = Multi30k()
-#german.build_vocab(train_data, max_size=10000, min_freq=2)
-#english.build_vocab(train_data, max_size=10000, min_freq=2)
+train_data, valid_data, test_data = Multi30k()
+german.build_vocab(train_data, max_size=10000, min_freq=2)
+english.build_vocab(train_data, max_size=10000, min_freq=2)
 
 
 def test():
