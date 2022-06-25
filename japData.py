@@ -54,11 +54,19 @@ dataField = [('japanese', japaneseText), ('english', englishText)]
 cleanTrainDf = cleanData(trainDf)
 cleanValDf = cleanData(valDf)
 
-japaneseText.build_vocab(cleanTrainDf, cleanValDf)
-englishText.build_vocab(cleanTrainDf, cleanValDf)
+train, val = TabularDataset.splits(
+    path='dataset/',
+    train='train.csv',
+    validation='val.csv',
+    format='csv',
+    fields=dataField
+)
+
+japaneseText.build_vocab(train, val)
+englishText.build_vocab(train, val)
 
 trainingIterator = BucketIterator(
-    cleanTrainDf,
+    train,
     batch_size=BATCH_SIZE,
     sort_key=lambda a: len(a.english),
     shuffle=True
