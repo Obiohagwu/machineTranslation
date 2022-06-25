@@ -73,11 +73,14 @@ trainingIterator = BucketIterator(
 )
 
 
+
+
 def test():
+    batch = next(iter(trainingIterator))
+    print(batch.english)
     print("No RUNTIME Errs!")
 if __name__ == "__main__":
     #print(tokenize_jp(trainDf))
-    batch = next(iter(trainingIterator))
-    print(batch.english)
+    
     test()
     
