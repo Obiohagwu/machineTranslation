@@ -5,6 +5,11 @@ import torch.optim as optim
 import pandas as pd 
 import spacy
 from torchtext.legacy.data import Field, TabularDataset, BucketIterator, Iterator
+import torchtext
+import gensim
+from gensim.models import Doc2Vec
+from gensim.models.doc2vec import TaggedDocument
+
 
 
 # Lets import the data set
@@ -47,9 +52,10 @@ englishText = Field(tokenize=tokenize_en, init_token='<sos>', eos_token='<eos>')
 dataField = [('japanese', japaneseText), ('english', englishText)]
 
 cleanTrainDf = cleanData(trainDf)
-cleanvalDf = cleanData(valDf)
-japaneseText = build_vocab(cleanTrainDf, cleanValDf)
-englishText = build_vocab(cleanTrainDf, cleanValDf)
+cleanValDf = cleanData(valDf)
+
+japaneseText.build_vocab(cleanTrainDf, cleanValDf)
+englishText.build_vocab(cleanTrainDf, cleanValDf)
 
 trainingIterator = BucketIterator(
     cleanTrainDf,
