@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
+from tqdm import tqdm 
 from torchtext.datasets import Multi30k
 from torchtext.legacy.data import Field, TabularDataset, BucketIterator, Iterator
 import math
@@ -16,7 +17,11 @@ ModelD = 512
 BATCH_SIZE = 20
 
 
+
 def trainModel(model, epochs, print_every=50):
+    loop = tqdm(epochs) # for progress bars
+     
+
     model.train()
 
     start = datetime.now()
@@ -57,11 +62,22 @@ def trainModel(model, epochs, print_every=50):
                 ))
                 total_loss = 0
                 temp = datetime.now()
+                loop.set_postfix(loss=loss.item())
     
         print()
+
 def main():
-    source_vocab = len()
-    pass
-if __name__ == "__name__":
-    model.to(device=DEVICE)
+    source_vocab = len(japaneseText.vocab)
+    target_vocab = len(englishText.vocab)
+    model = Transfomer(source_vocab, target_vocab, ModelD, N, attnHeads).to(DEVICE)
+    for p in model.parameters():
+        if p.dim() > 1:
+            nn.init.xavier_uniform_(p)
+    optim = optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optim, factor=0.1, patience=10, verbose=True
+    )
     trainModel(model, EPOCHS)
+
+if __name__ == "__name__":
+   main()
