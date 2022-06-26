@@ -169,11 +169,11 @@ class DecodeLayer(nn.Module):
         self.attntn2 = multiHeadAttention(heads, model_dim)
         self.feed_forward = FeedForward(model_dim).to(device=DEVICE)
 
-        def forward(self, x, exp_out, source_mask, target_mask):
+        def forward(self, x, encoder_out, source_mask, target_mask):
             x_int = self.norm1(x)
             x+=self.dropout1(self.attntn1(x_int, x_int, x_int, target_mask))
             x_int = self.norm2(x)
-            x+=self.dropout2(self.attntn2(x_int, exp_out, exp_out, source_mask))
+            x+=self.dropout2(self.attntn2(x_int, encoder_out, encoder_out, source_mask))
             x_int = self.norm3(x)
             x+=self.dropout3(self.feed_forward(x_int))
             return x 
@@ -210,12 +210,31 @@ class Decoder(nn.Module):
         self.layers = get_clones(EncoderLayer(model_dim, heads), N)
         self.norm=Norm(model_dim)
 
-    def forward(self, target, exp_out, source_mask, target_mask):
+    def forward(self, target, encoder_out, source_mask, target_mask):
         x = self.embed(target)
         x = self.pos_enc(x)
         for j in range(self.N):
-            x = self.layers[i](x, exp_out, source_mask, target_mask)
+            x = self.layers[i](x, encoder_out, source_mask, target_mask)
         return self.norm(x)
+
+# We are done implementing the sub-components of the Transfomer architecture
+# Now we are going to put it all together to implemnt the transformer module
+
+class Transfomer(nn.Module):
+    def __init__(self, source_vocab, target_vocab, model_dim, N, heads):
+        super().__init__()
+        self.encoder = Encoder(source_vocab, model_dim, N, heads)
+        self.Decoder = Decoder(target_vocab, model_dim, N, heads)
+        self.out = nn.Linear(model_dim, target_vocab)
+    
+    def forward(self, source, target, source_mask, target_mask):
+        encoder_out = self.encoder(source, source_mask)
+        decoder_out = self.decoder(target, encoder_out, source_mask, target_mask)
+        output = self.out(decoder_out)
+        return output
+    # we don't perform softmax on the output as this will be handled 
+    # automatically by our loss function    
+
 
     
 
