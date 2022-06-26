@@ -201,6 +201,24 @@ class Encoder(nn.Module):
             x = self.layers[i](x, mask)
         return self.norm(x)
 
+class Decoder(nn.Module):
+    def __init__(self, vocab_size, model_dim, N, heads):
+        super().__init__()
+        self.N = N
+        self.embed = Embed(vocab_size, model_dim)
+        self.pos_enc = PositionalEncoder(model_dim)
+        self.layers = get_clones(EncoderLayer(model_dim, heads), N)
+        self.norm=Norm(model_dim)
+
+    def forward(self, target, exp_out, source_mask, target_mask):
+        x = self.embed(target)
+        x = self.pos_enc(x)
+        for j in range(self.N):
+            x = self.layers[i](x, exp_out, source_mask, target_mask)
+        return self.norm(x)
+
+    
+
 
 
 
