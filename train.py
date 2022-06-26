@@ -6,6 +6,7 @@ from torchtext.datasets import Multi30k
 from torchtext.legacy.data import Field, TabularDataset, BucketIterator, Iterator
 import math
 from japData import *
+from model import *
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 EPOCHS = 10
@@ -58,7 +59,9 @@ def trainModel(model, epochs, print_every=50):
                 temp = datetime.now()
     
         print()
-
-
-model.to(device=DEVICE)
-#train(model, EPOCHS)
+def main():
+    source_vocab = len()
+    pass
+if __name__ == "__name__":
+    model.to(device=DEVICE)
+    trainModel(model, EPOCHS)
