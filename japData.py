@@ -72,6 +72,18 @@ trainingIterator = BucketIterator(
     shuffle=True
 )
 
+def masks(input_sequence, target_sequence):
+    input_padding = japaneseText.vocab.stoi['<pad>']
+    input_masking = (input_sequence != input_padding).unsqueeze(1)
+
+    target_padding = englishText.vocab.stoi['<pad>']
+    target_masking = (target_sequence != target_padding).unsqueeze(1)
+    size = target_sequence.size(1)
+    occludedMask = np.triu(np.ones((1, size, size)), k=1).astype(np.uint8)
+    occludedMask = torch.autograd.Variable(torch.from_numpy(occludedMask) == 0).to(device=DEVICE)
+    target_masking = target_masking & occludedMask
+
+    return input_masking, target_masking
 
 
 
