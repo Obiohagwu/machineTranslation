@@ -93,6 +93,6 @@ def test():
     print("No RUNTIME Errs!")
 if __name__ == "__main__":
     #print(tokenize_jp(trainDf))
-    
-    test()
+    print(len(japaneseText.vocab))
+    #test()
     

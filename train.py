@@ -77,7 +77,9 @@ def main():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optim, factor=0.1, patience=10, verbose=True
     )
-    trainModel(model, EPOCHS)
+    #trainModel(model, EPOCHS)
+    print(source_vocab)
 
 if __name__ == "__name__":
+   print(len(japaneseText.vocab))
    main()
