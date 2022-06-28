@@ -8,8 +8,8 @@ from torchtext.legacy.data import Field, TabularDataset, BucketIterator, Iterato
 import torchtext
 import gensim
 from gensim.models import Doc2Vec
-from torch.utils.tensorboard import SummaryWriter
-from gensim.models.doc2vec import TaggedDocument
+#from torch.utils.tensorboard import SummaryWriter
+from utils import load_checkpoint, save_checkpoint, translate
 
 
 from modelTransformer import Transfomer
@@ -87,9 +87,65 @@ source_pad_idx=english.vocab.stoi["<pad>"]
 
 # to visual loss vs runs
 
-visual = SummaryWriter("runs/loss")
+#visual = SummaryWriter("runs/loss")
 
-step=9
+step=0
+
+model = Transfomer(
+    embedding_size,
+    source_vocab_size,
+    target_vocab_size,
+    source_pad_idx,
+    num_heads,
+    num_encoder_layers,
+    num_decoder_layers,
+    forward_expansion,
+    dropout,
+    maximum_seq_len,
+    device
+).to(device)
+
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, factor=0.1, patience=10, verbose=True
+)
+
+pad_idx = english.vocab.stoi["<pad>"]
+criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)
+
+if load_model:
+    load_checkpoint(torch.load("my_checkpoint.pth.tar"), model, optimizer)
+
+test_sentence = "京都は東京の街です"
+
+for epoch in range(num_epochs):
+    print(f"[Epoch {epoch}/{num_epochs}]")
+
+    if save_model:
+        checkpoint = {
+            "state_dict": model.state_dict(),
+            "optimizer":optimizer.state_dict()
+        }
+        save_checkpoint(checkpoint)
+    model.eval()
+
+    translated_test = translate(model, test_sentence, custom_sentence=True)
+    """ ADD TRAINER HERE"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
 # train fucn
 
 def trainModel(model, epochs):
