@@ -10,8 +10,9 @@ import torch.optim as optim
 from torchtext.datasets import Multi30k
 from torchtext.legacy.data import Field, TabularDataset, BucketIterator, Iterator
 import math
+import copy
 
-
+N=6
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # Now we have to construct a model based on transformer architecture
 
@@ -20,7 +21,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 class Embed(nn.Module):
     def __init__(self, vocab_size, model_dim):
         super(Embed, self).__init__()
-        self.embed = nn.Embed(vocab_size, model_dim)
+        self.embed = nn.Embedding(vocab_size, model_dim)
 
     def forward(self, x):
         return self.embed(x)
@@ -34,13 +35,13 @@ class PositionalEncoder(nn.Module):
 
         # create constant 'pe' (position encoding) matrix with values dependant on 
         # pos (position) and i (index)
-        pe = torch.zeros(max_seq_len, d_model)
-        for pos in range(max_seq_len):
-            for i in range(0, d_model, 2):
+        pe = torch.zeros(maximum_seq_len, model_dim)
+        for pos in range(maximum_seq_len):
+            for i in range(0, model_dim, 2):
                 pe[pos, i] = \
-                math.sin(pos / (10000 ** ((2 * i)/d_model)))
+                math.sin(pos / (10000 ** ((2 * i)/model_dim)))
                 pe[pos, i + 1] = \
-                math.cos(pos / (10000 ** ((2 * (i + 1))/d_model)))
+                math.cos(pos / (10000 ** ((2 * (i + 1))/model_dim)))
                 
         pe = pe.unsqueeze(0)
         self.register_buffer('pe', pe)
@@ -110,7 +111,18 @@ class multiHeadAttention(nn.Module):
         return output
 
 
+class FeedForward(nn.Module):
+    def __init__(self, model_dim, ff_dim=2048, dropout=0.1):
+        super().__init__()
+        # we constant feedforward dim to 2048
 
+        self.linear1 = nn.Linear(model_dim, ff_dim)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(ff_dim, model_dim)
+    def forward(self, x):
+        x = self.dropout(F.relu(self.linear1(x)))
+        x = self.linear2(x)
+        return x 
 # We implement an encoder and decoder layer class that will be used in encode and decode class
 
 # After implementing those, we will finally get to final transformer mechanism
@@ -198,7 +210,7 @@ class Encoder(nn.Module):
         x = self.embed(source)
         x = self.pos_enc(x)
         for j in range(N):
-            x = self.layers[i](x, mask)
+            x = self.layers[j](x, mask)
         return self.norm(x)
 
 class Decoder(nn.Module):

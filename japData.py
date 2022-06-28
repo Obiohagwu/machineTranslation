@@ -8,7 +8,10 @@ from torchtext.legacy.data import Field, TabularDataset, BucketIterator, Iterato
 import torchtext
 import gensim
 from gensim.models import Doc2Vec
+import tqdm
 from gensim.models.doc2vec import TaggedDocument
+from model import *
+from datetime import datetime
 
 
 
@@ -85,7 +88,67 @@ def masks(input_sequence, target_sequence):
 
     return input_masking, target_masking
 
+def trainModel(model, epochs, print_every=50):
+    #loop = tqdm(epochs) # for progress bars
+     
 
+    model.train()
+
+    start = datetime.now()
+    temp = start 
+
+    Tloss = 0
+
+    for epoch in range(epochs):
+        for i, batch in enumerate(trainingIterator):
+            src = batch.japanese.transpose(0,1)
+            trg = batch.english.transpose(0,1)
+            trg_input = trg[:,:-1]
+            targets = trg[:,1:].contiguous().view(-1)
+            
+            # Use mask function to mask the above srcs and trgs
+            src_mask, trg_mask = masks(src, trg_input)
+            preds = model(src, trg_input, src_mask, trg_mask)
+            optim.zero_grad()
+
+            loss = F.cross_entropy(
+                preds.view(-1, preds.size(-1)),
+                targets,
+                ignore_index=target_pad
+            )
+            loss.backward()
+            optim.step()
+            
+            total_loss += loss.item()
+            if (i + 1) % print_every == 0:
+                loss_avg = total_loss / print_every
+                print("time = {}, epoch {}, iter = {}, loss = {}, {} per {} iters".format(
+                    (datetime.now() - start) // 60,
+                    epoch + 1,
+                    i + 1,
+                    loss_avg,
+                    datetime.now() - temp,
+                    print_every
+                ))
+                total_loss = 0
+                temp = datetime.now()
+                #loop.set_postfix(loss=loss.item())
+    
+        print()
+
+def main():
+    source_vocab = len(japaneseText.vocab)
+    target_vocab = len(englishText.vocab)
+    model = Transfomer(source_vocab, target_vocab, ModelD, N, attnHeads).to(DEVICE)
+    for p in model.parameters():
+        if p.dim() > 1:
+            nn.init.xavier_uniform_(p)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, factor=0.1, patience=10, verbose=True
+    )
+    trainModel(model, EPOCHS)
+    #print(source_vocab)
 
 def test():
     batch = next(iter(trainingIterator))
@@ -93,6 +156,6 @@ def test():
     print("No RUNTIME Errs!")
 if __name__ == "__main__":
     #print(tokenize_jp(trainDf))
-    print(len(japaneseText.vocab))
-    #test()
+    #print(len(japaneseText.vocab))
+    main()
     
