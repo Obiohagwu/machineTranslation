@@ -6,7 +6,7 @@ The crux of the transformer architecture is based on this mechanism of attention
 
 The self-attention mechanism can be defined as:
 
-![CodeCogsEqn (20)](https://user-images.githubusercontent.com/73560826/196820032-fee93619-530f-4bd4-b890-2969ea8329c3.svg)
+![CodeCogsEqn (21)](https://user-images.githubusercontent.com/73560826/196820101-b7299aec-c5af-4414-a453-f86533675b29.svg)
 
 
 
